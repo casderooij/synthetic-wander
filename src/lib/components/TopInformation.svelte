@@ -1,8 +1,50 @@
 <script lang="ts">
-  import { state } from '$lib/route';
+  import { state, send } from '$lib/route';
+  import { debounce } from 'lodash-es';
+
+  let radius = 2;
+
+  function startRoute() {
+    send('START_ROUTE');
+  }
+
+  function setRadius() {
+    send('SET_RADIUS', { radius });
+  }
 </script>
 
-<p>Starting point: {$state.context.startingPoint.parent.name}</p>
-{#if $state.context.isDebug}
-  <p>State: {$state.value}</p>
-{/if}
+<header>
+  <div>
+    <p>Starting point: {$state.context.startingPoint.parent.name}</p>
+    <p>
+      Neighbouring points: {$state.context.currentPoint.neighbourPoints.length}
+    </p>
+    {#if $state.context.isDebug}
+      <p>State: {$state.value}</p>
+    {/if}
+  </div>
+
+  <div>
+    {#if $state.matches('idle')}
+      <button on:click={startRoute}>start route</button>
+
+      <input
+        type="range"
+        min="2"
+        max="20"
+        step="1"
+        bind:value={radius}
+        on:change={debounce(setRadius, 250)}
+      />
+    {/if}
+  </div>
+</header>
+
+<style>
+  header {
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+</style>

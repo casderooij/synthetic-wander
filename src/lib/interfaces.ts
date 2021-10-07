@@ -13,4 +13,5 @@ export interface IStreet {
   name: string;
   p1: IPoint;
   p2: IPoint;
+  isDeadEnd?: boolean;
 }

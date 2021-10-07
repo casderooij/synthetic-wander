@@ -17,7 +17,7 @@ class Point {
 
   findNeighbourPoints(points: Point[], radius: number) {
     points.forEach((point) => {
-      if (point === this || point.parent === this.parent) return;
+      if (point === this || point.parent.id === this.parent.id) return;
 
       if (
         squaredDistance(
@@ -58,7 +58,7 @@ const createStreetArray = () => {
  * All points check for their neighbouring points
  * @returns Array of street classes
  */
-const initializeData = () => {
+const initializeData = (radius = 2) => {
   const streets = createStreetArray();
 
   const pointArray: Point[] = streets.flatMap((street) => [
@@ -67,12 +67,15 @@ const initializeData = () => {
   ]);
 
   // All points check for neighbouring points
-  pointArray.forEach((point) => point.findNeighbourPoints(pointArray, 2));
+  pointArray.forEach((point) => point.findNeighbourPoints(pointArray, radius));
 
   return streets;
 };
 
 const streets = initializeData();
+console.log(
+  streets.find((street) => street.id === 'ec962c58-6311-434d-87c2-bf969e3b553f')
+);
 
 const startingPoint = streets.find(
   (street) => street.id === '873a216f-dbc7-4b70-85f4-da05063b1cf0'
@@ -80,7 +83,8 @@ const startingPoint = streets.find(
 
 type RouteEvent =
   | { type: 'SET_RADIUS'; radius: number }
-  | { type: 'SET_STARTING_POINT'; point: Point };
+  | { type: 'SET_STARTING_POINT'; point: Point }
+  | { type: 'START_ROUTE' };
 
 interface RouteContext {
   isDebug: boolean;
@@ -107,16 +111,17 @@ const routeMachine = createMachine<RouteContext, RouteEvent>({
             startingPoint: (_, event) => event.point,
           }),
         },
+        SET_RADIUS: {
+          actions: assign({
+            streets: (_, event) => initializeData(event.radius),
+          }),
+        },
+        START_ROUTE: {
+          target: 'run',
+        },
       },
     },
-    initializeData: {
-      // entry: Initialize data
-      // on: SET_RADIUS: Initialize data with given radius
-    },
-    selectStartPoint: {
-      // Select the starting point of the route
-      // on: SET_STARTING_POINT: set current point
-    },
+    run: {},
   },
 });
 
