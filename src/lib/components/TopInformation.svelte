@@ -17,7 +17,7 @@
   <div>
     <p>Starting point: {$state.context.startingPoint.parent.name}</p>
     <p>
-      Neighbouring points: {$state.context.currentPoint.neighbourPoints.length}
+      Neighbouring streets: {$state.context.currentPoint.neighbourPoints.length}
     </p>
     {#if $state.context.isDebug}
       <p>State: {$state.value}</p>

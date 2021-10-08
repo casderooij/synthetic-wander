@@ -47,7 +47,7 @@
   }
 
   .selector:hover {
-    stroke: lightgreen;
+    stroke: black;
   }
 
   @keyframes pulse {
