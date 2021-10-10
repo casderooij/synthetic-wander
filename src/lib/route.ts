@@ -72,11 +72,14 @@ const initializeData = (radius = 2) => {
   return streets;
 };
 
+/**
+ * Initialize all streets
+ */
 const streets = initializeData();
-console.log(
-  streets.find((street) => street.id === 'ec962c58-6311-434d-87c2-bf969e3b553f')
-);
 
+/**
+ * Get the startingPoint located at Tante Netty
+ */
 const startingPoint = streets.find(
   (street) => street.id === '873a216f-dbc7-4b70-85f4-da05063b1cf0'
 ).p1;
@@ -95,10 +98,16 @@ interface RouteContext {
   userData?: IUserData;
 }
 
+type RouteStates =
+  | { value: 'idle'; context: RouteContext }
+  | { value: 'setup'; context: RouteContext }
+  | { value: 'run'; context: RouteContext }
+  | { value: 'finish'; context: RouteContext };
+
 /**
  * Route machine
  */
-const routeMachine = createMachine<RouteContext, RouteEvent>({
+const routeMachine = createMachine<RouteContext, RouteEvent, RouteStates>({
   key: 'route',
   initial: 'idle',
   context: {
@@ -126,7 +135,7 @@ const routeMachine = createMachine<RouteContext, RouteEvent>({
         },
       },
     },
-    input: {
+    setup: {
       on: {
         SET_USER_DATA: {
           actions: assign({
@@ -136,6 +145,7 @@ const routeMachine = createMachine<RouteContext, RouteEvent>({
       },
     },
     run: {},
+    finish: {},
   },
 });
 
