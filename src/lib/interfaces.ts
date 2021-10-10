@@ -1,8 +1,3 @@
-export interface Size {
-  width: number;
-  height: number;
-}
-
 export interface IPoint {
   x: number;
   y: number;
@@ -14,4 +9,9 @@ export interface IStreet {
   p1: IPoint;
   p2: IPoint;
   isDeadEnd?: boolean;
+}
+
+export interface IUserData {
+  name: string;
+  age: number;
 }

@@ -1,6 +1,7 @@
 <script lang="ts">
   import { state, send } from '$lib/route';
   import { debounce } from 'lodash-es';
+  import Range from '$lib/components/Range.svelte';
 
   let radius = 2;
 
@@ -28,13 +29,12 @@
     {#if $state.matches('idle')}
       <button on:click={startRoute}>start route</button>
 
-      <input
-        type="range"
-        min="2"
-        max="20"
-        step="1"
+      <Range
+        min={2}
+        max={20}
+        step={1}
         bind:value={radius}
-        on:change={debounce(setRadius, 250)}
+        onChange={debounce(setRadius, 250)}
       />
     {/if}
   </div>

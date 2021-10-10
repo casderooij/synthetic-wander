@@ -1,7 +1,7 @@
 import { createMachine, assign } from 'xstate';
 import { useMachine } from '@xstate/svelte';
 import streetData from '$lib/streetData';
-import type { IPoint, IStreet } from '$lib/interfaces';
+import type { IPoint, IStreet, IUserData } from '$lib/interfaces';
 import { squaredDistance } from '$lib/utils/math';
 
 class Point {
@@ -84,6 +84,7 @@ const startingPoint = streets.find(
 type RouteEvent =
   | { type: 'SET_RADIUS'; radius: number }
   | { type: 'SET_STARTING_POINT'; point: Point }
+  | { type: 'SET_USER_DATA'; data: IUserData }
   | { type: 'START_ROUTE' };
 
 interface RouteContext {
@@ -91,8 +92,12 @@ interface RouteContext {
   streets: Street[];
   startingPoint: Point;
   currentPoint: Point;
+  userData?: IUserData;
 }
 
+/**
+ * Route machine
+ */
 const routeMachine = createMachine<RouteContext, RouteEvent>({
   key: 'route',
   initial: 'idle',
@@ -118,6 +123,15 @@ const routeMachine = createMachine<RouteContext, RouteEvent>({
         },
         START_ROUTE: {
           target: 'run',
+        },
+      },
+    },
+    input: {
+      on: {
+        SET_USER_DATA: {
+          actions: assign({
+            userData: (_, event) => event.data,
+          }),
         },
       },
     },
