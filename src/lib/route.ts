@@ -85,6 +85,7 @@ const startingPoint = streets.find(
 ).p1;
 
 type RouteEvent =
+  | { type: 'NEW_ROUTE' }
   | { type: 'SET_RADIUS'; radius: number }
   | { type: 'SET_STARTING_POINT'; point: Point }
   | { type: 'SET_USER_DATA'; data: IUserData }
@@ -119,28 +120,39 @@ const routeMachine = createMachine<RouteContext, RouteEvent, RouteStates>({
   states: {
     idle: {
       on: {
-        SET_STARTING_POINT: {
-          actions: assign({
-            currentPoint: (_, event) => event.point,
-            startingPoint: (_, event) => event.point,
-          }),
-        },
-        SET_RADIUS: {
-          actions: assign({
-            streets: (_, event) => initializeData(event.radius),
-          }),
-        },
-        START_ROUTE: {
-          target: 'run',
-        },
+        NEW_ROUTE: 'setup.userData',
       },
     },
     setup: {
-      on: {
-        SET_USER_DATA: {
-          actions: assign({
-            userData: (_, event) => event.data,
-          }),
+      initial: 'userData',
+      states: {
+        userData: {
+          on: {
+            SET_USER_DATA: {
+              target: 'setup.startPoint',
+              actions: assign({
+                userData: (_, event) => event.data,
+              }),
+            },
+          },
+        },
+        startPoint: {
+          on: {
+            SET_STARTING_POINT: {
+              actions: assign({
+                currentPoint: (_, event) => event.point,
+                startingPoint: (_, event) => event.point,
+              }),
+            },
+            SET_RADIUS: {
+              actions: assign({
+                streets: (_, event) => initializeData(event.radius),
+              }),
+            },
+            START_ROUTE: {
+              target: 'run',
+            },
+          },
         },
       },
     },
