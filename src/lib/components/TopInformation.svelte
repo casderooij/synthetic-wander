@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { state, send } from '$lib/route';
+  import { state, send, Point } from '$lib/route';
   import { debounce } from 'lodash-es';
   import Range from '$lib/components/Range.svelte';
 
@@ -12,14 +12,30 @@
   function setRadius() {
     send('SET_RADIUS', { radius });
   }
+
+  function getUniqueNeighbouringStreets(currentPoint: Point) {
+    const seen = {};
+    seen[currentPoint.parent.name] = true;
+
+    return currentPoint.neighbourPoints.filter((point) => {
+      return seen.hasOwnProperty(point.parent.name)
+        ? false
+        : (seen[point.parent.name] = true);
+    });
+  }
 </script>
 
 <header>
   <div>
     <p>Starting point: {$state.context.startingPoint.parent.name}</p>
-    <p>
-      Neighbouring streets: {$state.context.currentPoint.neighbourPoints.length}
-    </p>
+    {#if getUniqueNeighbouringStreets($state.context.currentPoint).length > 0}
+      <p>
+        Neighbouring streets:
+        {#each getUniqueNeighbouringStreets($state.context.currentPoint) as street}
+          <p>{street.parent.name}</p>
+        {/each}
+      </p>
+    {/if}
     {#if $state.context.isDebug}
       <p>State: {$state.value}</p>
     {/if}

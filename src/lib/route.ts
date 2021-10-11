@@ -99,18 +99,12 @@ interface RouteContext {
   userData?: IUserData;
 }
 
-type RouteStates =
-  | { value: 'idle'; context: RouteContext }
-  | { value: 'setup'; context: RouteContext }
-  | { value: 'run'; context: RouteContext }
-  | { value: 'finish'; context: RouteContext };
-
 /**
  * Route machine
  */
-const routeMachine = createMachine<RouteContext, RouteEvent, RouteStates>({
+const routeMachine = createMachine<RouteContext, RouteEvent>({
   key: 'route',
-  initial: 'idle',
+  initial: 'setup',
   context: {
     isDebug: true,
     streets,
@@ -118,41 +112,26 @@ const routeMachine = createMachine<RouteContext, RouteEvent, RouteStates>({
     currentPoint: startingPoint,
   },
   states: {
-    idle: {
-      on: {
-        NEW_ROUTE: 'setup.userData',
-      },
-    },
     setup: {
-      initial: 'userData',
-      states: {
-        userData: {
-          on: {
-            SET_USER_DATA: {
-              target: 'setup.startPoint',
-              actions: assign({
-                userData: (_, event) => event.data,
-              }),
-            },
-          },
+      on: {
+        SET_USER_DATA: {
+          actions: assign({
+            userData: (_, event) => event.data,
+          }),
         },
-        startPoint: {
-          on: {
-            SET_STARTING_POINT: {
-              actions: assign({
-                currentPoint: (_, event) => event.point,
-                startingPoint: (_, event) => event.point,
-              }),
-            },
-            SET_RADIUS: {
-              actions: assign({
-                streets: (_, event) => initializeData(event.radius),
-              }),
-            },
-            START_ROUTE: {
-              target: 'run',
-            },
-          },
+        SET_STARTING_POINT: {
+          actions: assign({
+            currentPoint: (_, event) => event.point,
+            startingPoint: (_, event) => event.point,
+          }),
+        },
+        SET_RADIUS: {
+          actions: assign({
+            streets: (_, event) => initializeData(event.radius),
+          }),
+        },
+        START_ROUTE: {
+          target: 'run',
         },
       },
     },
