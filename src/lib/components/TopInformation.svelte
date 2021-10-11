@@ -23,15 +23,26 @@
         : (seen[point.parent.name] = true);
     });
   }
+
+  $: neighbouringStreets = (() => {
+    const seen = {};
+    seen[$state.context.currentPoint.parent.name] = true;
+
+    return $state.context.currentPoint.neighbourPoints.filter((point) => {
+      return seen.hasOwnProperty(point.parent.name)
+        ? false
+        : (seen[point.parent.name] = true);
+    });
+  })();
 </script>
 
 <header>
   <div>
     <p>Starting point: {$state.context.startingPoint.parent.name}</p>
-    {#if getUniqueNeighbouringStreets($state.context.currentPoint).length > 0}
+    {#if neighbouringStreets.length > 0}
       <p>
         Neighbouring streets:
-        {#each getUniqueNeighbouringStreets($state.context.currentPoint) as street}
+        {#each neighbouringStreets as street}
           <p>{street.parent.name}</p>
         {/each}
       </p>
