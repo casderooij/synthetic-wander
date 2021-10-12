@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { fade, scale } from 'svelte/transition';
+  import { scale } from 'svelte/transition';
   import { randomRange } from '$lib/utils/math';
   import type { Point } from '$lib/route';
 
@@ -12,8 +12,8 @@
     out:scale={{ duration: 800 }}
     r={randomRange(2, 8)}
     style="--fill-color: hsl(0, 100%, {randomRange(
-      65,
-      90
+      70,
+      95
     )}%); --animation-duration: {randomRange(3, 6)}s"
   />
 </g>

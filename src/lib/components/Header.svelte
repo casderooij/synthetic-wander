@@ -85,7 +85,7 @@
     height: 1rem;
     top: 3.8rem;
     left: 2%;
-    border: 2px solid black;
+    border: 2px solid;
     background: #fff;
     transform: rotate(3deg);
   }
@@ -97,7 +97,7 @@
     height: 1rem;
     top: 2.8rem;
     left: 20%;
-    border: 2px solid black;
+    border: 2px solid;
     background: #fff;
     transform: rotate(-3deg);
   }
