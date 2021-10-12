@@ -239,7 +239,7 @@ const streetData: IStreet[] = [
     id: '7b02fd96-e4b3-43ef-b6c6-86d3fdd443ed',
     name: 'Torricellistraat',
     p1: { x: 216.22, y: 359.47 },
-    p2: { x: 277.32, y: 344.66 },
+    p2: { x: 227.32, y: 344.66 },
   },
   {
     id: '1df472af-be06-424f-9b7a-33191ed307c2',

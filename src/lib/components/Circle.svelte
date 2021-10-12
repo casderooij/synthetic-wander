@@ -12,7 +12,7 @@
     out:scale={{ duration: 800 }}
     r={randomRange(2, 8)}
     style="--fill-color: hsl(0, 100%, {randomRange(
-      75,
+      65,
       90
     )}%); --animation-duration: {randomRange(3, 6)}s"
   />
