@@ -9,7 +9,7 @@
   const width = 297;
   const height = 420;
 
-  $: console.log($state);
+  // $: console.log($state);
 </script>
 
 <div>
@@ -42,19 +42,22 @@
     position: relative;
     display: flex;
     justify-content: center;
+    align-items: center;
+    height: 100vh;
     width: 100%;
-  }
-
-  img {
-    position: absolute;
-    display: block;
-    width: 50%;
-    pointer-events: none;
   }
 
   svg {
     position: relative;
     display: block;
-    width: 50%;
+    height: 100%;
+  }
+
+  img {
+    position: absolute;
+    display: block;
+    pointer-events: none;
+    max-width: 100%;
+    height: 100%;
   }
 </style>

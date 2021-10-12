@@ -2,10 +2,9 @@
   import type { IUserData } from '$lib/interfaces';
   import { send } from '$lib/route';
 
-  let userData: IUserData = { name: '', age: undefined };
+  let userData: IUserData = { name: '' };
 
   function handleSubmit() {
-    console.log(userData);
     send('SET_USER_DATA', { data: userData });
   }
 </script>
@@ -15,10 +14,6 @@
     <div>
       <label for="name">Name:</label>
       <input type="text" id="name" name="name" bind:value={userData.name} />
-    </div>
-    <div>
-      <label for="age">Age:</label>
-      <input type="number" id="age" name="age" bind:value={userData.age} />
     </div>
     <input type="submit" value="send" />
   </form>

@@ -3,7 +3,8 @@
 </script>
 
 <script lang="ts">
-  import TopInformation from '$lib/components/TopInformation.svelte';
+  import Header from '$lib/components/Header.svelte';
+  import Footer from '$lib/components/Footer.svelte';
   import Map from '$lib/components/Map.svelte';
   import UserInput from '$lib/components/UserInput.svelte';
 
@@ -39,9 +40,19 @@
   }
 </script>
 
-<button on:click={checkPrintArea}>Check print area</button>
+<!-- <button on:click={checkPrintArea}>Check print area</button> -->
 
-<TopInformation />
+<div class="container">
+  <Header />
 
-<!-- <UserInput /> -->
-<Map />
+  <!-- <UserInput /> -->
+  <Map />
+
+  <Footer />
+</div>
+
+<style>
+  .container {
+    position: relative;
+  }
+</style>

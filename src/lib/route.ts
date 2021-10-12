@@ -81,8 +81,7 @@ const streets = initializeData();
  * Get the startingPoint located at Tante Netty
  */
 const startingPoint = streets.find(
-  // (street) => street.id === '873a216f-dbc7-4b70-85f4-da05063b1cf0'
-  (street) => street.id === 'c28c1daa-42d6-4261-8fff-b8a728804ac6'
+  (street) => street.id === '873a216f-dbc7-4b70-85f4-da05063b1cf0'
 ).p1;
 
 /**
@@ -123,6 +122,7 @@ const getNeighbourPoint = (currentPoint: Point) => {
 
 type RouteEvent =
   | { type: 'DONE' }
+  | { type: 'START_PERSONAL_ROUTE' }
   | { type: 'NEW_ROUTE' }
   | { type: 'SET_RADIUS'; radius: number }
   | { type: 'SET_STARTING_POINT'; point: Point }
@@ -132,7 +132,6 @@ type RouteEvent =
 interface RouteContext {
   isDebug: boolean;
   streets: Street[];
-  startingPoint: Point;
   currentPoint: Point;
   userData?: IUserData;
   points: Point[][];
@@ -150,7 +149,6 @@ const routeMachine = createMachine<RouteContext, RouteEvent>({
   context: {
     isDebug: true,
     streets,
-    startingPoint: startingPoint,
     currentPoint: startingPoint,
     maxPointsLength: 0,
     points: [],
@@ -241,32 +239,105 @@ const routeMachine = createMachine<RouteContext, RouteEvent>({
           },
         },
       },
-    },
-    setup: {
       on: {
-        SET_USER_DATA: {
-          actions: assign({
-            userData: (_, event) => event.data,
-          }),
-        },
-        SET_STARTING_POINT: {
-          actions: assign({
-            currentPoint: (_, event) => event.point,
-            startingPoint: (_, event) => event.point,
-          }),
-        },
-        SET_RADIUS: {
-          actions: assign({
-            streets: (_, event) => initializeData(event.radius),
-          }),
-        },
-        START_ROUTE: {
-          target: 'run',
-        },
+        START_PERSONAL_ROUTE: { target: 'personal_route' },
       },
     },
-    run: {},
-    finish: {},
+    personal_route: {
+      initial: 'setup_personal_route',
+      states: {
+        setup_personal_route: {},
+        move_to_other_point: {},
+        next_step: {},
+        choose_direction: {},
+        done: {},
+      },
+      // initial: 'personal_route.setup',
+      // entry: assign((context) => {
+      //   return {
+      //     currentPoint: startingPoint,
+      //     points: [],
+      //   };
+      // }),
+      // states: {
+      //   setup: {
+      //     on: {
+      //       SET_STARTING_POINT: {
+      //         actions: assign({
+      //           currentPoint: (_, event) => event.point,
+      //         }),
+      //       },
+      //       SET_USER_DATA: {
+      //         actions: assign({
+      //           userData: (_, event) => event.data,
+      //         }),
+      //       },
+      //       START_ROUTE: {
+      //         target: 'personal_route.run',
+      //       },
+      //     },
+      //   },
+      //   run: {
+      //     initial: 'personal_route.run.setup',
+      //     states: {
+      //       setup: {
+      //         entry: assign({
+      //           points: (context) => [[context.currentPoint]],
+      //         }),
+      //         after: {
+      //           500: { target: 'personal_route.run.move_to_other_point' },
+      //         },
+      //       },
+      //       move_to_other_point: {
+      //         entry: assign((context) => {
+      //           const otherPoint = getOtherPoint(context.currentPoint);
+
+      //           const newPointsArray = context.points;
+      //           newPointsArray[newPointsArray.length - 1][1] = otherPoint;
+
+      //           return {
+      //             currentPoint: otherPoint,
+      //             points: newPointsArray,
+      //             routeLength:
+      //               context.routeLength +
+      //               squaredDistance(
+      //                 [
+      //                   context.currentPoint.position.x,
+      //                   context.currentPoint.position.y,
+      //                 ],
+      //                 [otherPoint.position.x, otherPoint.position.y]
+      //               ),
+      //           };
+      //         }),
+      //         // after: {
+      //         //   500: [{ target: 'next_step' }],
+      //         // },
+      //       },
+      //     },
+      //   },
+      // },
+      // on: {
+      //   SET_USER_DATA: {
+      //     actions: assign({
+      //       userData: (_, event) => event.data,
+      //     }),
+      //   },
+      //   SET_STARTING_POINT: {
+      //     actions: assign({
+      //       currentPoint: (_, event) => event.point,
+      //       startingPoint: (_, event) => event.point,
+      //     }),
+      //   },
+      //   SET_RADIUS: {
+      //     actions: assign({
+      //       streets: (_, event) => initializeData(event.radius),
+      //     }),
+      //   },
+      //   START_ROUTE: {
+      //     target: 'run',
+      //   },
+      // },
+    },
   },
 });
 

@@ -13,5 +13,4 @@ export interface IStreet {
 
 export interface IUserData {
   name: string;
-  age: number;
 }

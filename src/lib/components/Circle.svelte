@@ -23,7 +23,6 @@
     transform: scale(2);
     animation: pulse var(--animation-duration) infinite;
     fill: var(--fill-color);
-    mix-blend-mode: multiply;
   }
 
   @keyframes pulse {
