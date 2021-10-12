@@ -47,9 +47,6 @@
         {/each}
       </p>
     {/if}
-    {#if $state.context.isDebug}
-      <p>State: {$state.value}</p>
-    {/if}
   </div>
 
   <div>

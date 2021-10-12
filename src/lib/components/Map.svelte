@@ -1,5 +1,6 @@
 <script lang="ts">
   import StreetComponent from '$lib/components/StreetComponent.svelte';
+  import Line from '$lib/components/Line.svelte';
 
   import { state } from '$lib/route';
 
@@ -14,6 +15,8 @@
         <StreetComponent {street} />
       {/each}
     </g>
+
+    <Line />
   </svg>
   <img src="/woensel-west-crossings.svg" alt="" />
 </div>

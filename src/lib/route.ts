@@ -2,7 +2,7 @@ import { createMachine, assign } from 'xstate';
 import { useMachine } from '@xstate/svelte';
 import streetData from '$lib/streetData';
 import type { IPoint, IStreet, IUserData } from '$lib/interfaces';
-import { squaredDistance } from '$lib/utils/math';
+import { squaredDistance, randomRange } from '$lib/utils/math';
 
 class Point {
   parent: Street;
@@ -84,6 +84,42 @@ const startingPoint = streets.find(
   (street) => street.id === '873a216f-dbc7-4b70-85f4-da05063b1cf0'
 ).p1;
 
+/**
+ * Random point from streets array
+ * @returns Point
+ */
+const getRandomStartingPoint = () =>
+  streets[randomRange(0, streets.length - 1)].p1;
+
+/**
+ * Get the other point from the street
+ * @param currentPoint
+ * @returns Point
+ */
+const getOtherPoint = (currentPoint: Point) => {
+  const p1 = currentPoint.parent.p1;
+  const p2 = currentPoint.parent.p2;
+  if (
+    currentPoint.position.x === p1.position.x &&
+    currentPoint.position.y === p1.position.y
+  ) {
+    return p2;
+  } else {
+    return p1;
+  }
+};
+
+/**
+ * Get random point from neighbouring points
+ * @param currentPoint
+ * @returns Point
+ */
+const getNeighbourPoint = (currentPoint: Point) => {
+  return currentPoint.neighbourPoints[
+    randomRange(0, currentPoint.neighbourPoints.length - 1)
+  ];
+};
+
 type RouteEvent =
   | { type: 'NEW_ROUTE' }
   | { type: 'SET_RADIUS'; radius: number }
@@ -97,6 +133,8 @@ interface RouteContext {
   startingPoint: Point;
   currentPoint: Point;
   userData?: IUserData;
+  points: Point[];
+  maxPointsLength: number;
 }
 
 /**
@@ -104,14 +142,62 @@ interface RouteContext {
  */
 const routeMachine = createMachine<RouteContext, RouteEvent>({
   key: 'route',
-  initial: 'setup',
+  initial: 'idle',
   context: {
     isDebug: true,
     streets,
     startingPoint: startingPoint,
     currentPoint: startingPoint,
+    maxPointsLength: 0,
+    points: [],
   },
   states: {
+    idle: {
+      initial: 'random_route',
+      states: {
+        random_route: {
+          entry: assign({
+            startingPoint: getRandomStartingPoint(),
+            maxPointsLength: randomRange(14, 26),
+          }),
+          after: {
+            300: {
+              actions: assign({ points: (context) => [context.currentPoint] }),
+            },
+            1000: { target: 'move_to_other_point' },
+          },
+        },
+        move_to_other_point: {
+          entry: assign({
+            points: (context) => [
+              ...context.points,
+              getOtherPoint(context.currentPoint),
+            ],
+          }),
+          after: {
+            100: {
+              actions: assign({
+                currentPoint: (context) =>
+                  context.points[context.points.length - 1],
+              }),
+            },
+            500: {
+              target: 'choose_direction',
+              cond: (context) =>
+                context.points.length <= context.maxPointsLength,
+            },
+          },
+        },
+        choose_direction: {
+          entry: assign({
+            currentPoint: (context) => getNeighbourPoint(context.currentPoint),
+          }),
+          after: {
+            500: { target: 'move_to_other_point' },
+          },
+        },
+      },
+    },
     setup: {
       on: {
         SET_USER_DATA: {
