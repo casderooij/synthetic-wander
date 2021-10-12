@@ -1258,14 +1258,14 @@ const streetData: IStreet[] = [
   {
     id: 'c28c1daa-42d6-4261-8fff-b8a728804ac6',
     name: 'Naaldhout',
-    p1: { x: 69.74, y: 120.06 },
+    p1: { x: 37.46, y: 120.78 },
     p2: { x: 42.09, y: 130.57 },
   },
   {
     id: 'b1194d20-42af-494b-afd1-ccd3bf2f7318',
     name: 'Naaldhout',
     p1: { x: 42.09, y: 130.57 },
-    p2: { x: 37.46, y: 120.78 },
+    p2: { x: 69.74, y: 120.06 },
   },
   {
     id: '1ef6f135-c08c-4162-ac84-ab8176370b1d',

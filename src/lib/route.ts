@@ -81,7 +81,8 @@ const streets = initializeData();
  * Get the startingPoint located at Tante Netty
  */
 const startingPoint = streets.find(
-  (street) => street.id === '873a216f-dbc7-4b70-85f4-da05063b1cf0'
+  // (street) => street.id === '873a216f-dbc7-4b70-85f4-da05063b1cf0'
+  (street) => street.id === 'c28c1daa-42d6-4261-8fff-b8a728804ac6'
 ).p1;
 
 /**
@@ -121,6 +122,7 @@ const getNeighbourPoint = (currentPoint: Point) => {
 };
 
 type RouteEvent =
+  | { type: 'DONE' }
   | { type: 'NEW_ROUTE' }
   | { type: 'SET_RADIUS'; radius: number }
   | { type: 'SET_STARTING_POINT'; point: Point }
@@ -133,7 +135,7 @@ interface RouteContext {
   startingPoint: Point;
   currentPoint: Point;
   userData?: IUserData;
-  points: Point[];
+  points: Point[][];
   maxPointsLength: number;
   routeLength: number;
   routeEnd: boolean;
@@ -157,29 +159,37 @@ const routeMachine = createMachine<RouteContext, RouteEvent>({
   },
   states: {
     idle: {
-      initial: 'random_route',
+      initial: 'setup_random_route',
       states: {
-        random_route: {
-          entry: assign({
-            startingPoint: getRandomStartingPoint(),
-            maxPointsLength: randomRange(14, 26),
+        setup_random_route: {
+          entry: assign(() => {
+            return {
+              points: [],
+              currentPoint: getRandomStartingPoint(),
+              maxPointsLength: randomRange(14, 26),
+              routeLength: 0,
+            };
           }),
           after: {
-            300: {
-              actions: assign({ points: (context) => [context.currentPoint] }),
+            500: {
+              actions: assign({
+                points: (context) => [[context.currentPoint]],
+              }),
             },
             1000: { target: 'move_to_other_point' },
           },
         },
         move_to_other_point: {
-          entry: assign({
-            points: (context) => [
-              ...context.points,
-              getOtherPoint(context.currentPoint),
-            ],
-            routeLength: (context) => {
-              const otherPoint = getOtherPoint(context.currentPoint);
-              return (
+          entry: assign((context) => {
+            const otherPoint = getOtherPoint(context.currentPoint);
+
+            const newPointsArray = context.points;
+            newPointsArray[newPointsArray.length - 1][1] = otherPoint;
+
+            return {
+              currentPoint: otherPoint,
+              points: newPointsArray,
+              routeLength:
                 context.routeLength +
                 squaredDistance(
                   [
@@ -187,30 +197,47 @@ const routeMachine = createMachine<RouteContext, RouteEvent>({
                     context.currentPoint.position.y,
                   ],
                   [otherPoint.position.x, otherPoint.position.y]
-                )
-              );
-            },
+                ),
+            };
           }),
           after: {
-            100: {
-              actions: assign({
-                currentPoint: (context) =>
-                  context.points[context.points.length - 1],
-              }),
-            },
-            500: {
-              target: 'choose_direction',
-              cond: (context) =>
-                context.points.length <= context.maxPointsLength,
-            },
+            500: [{ target: 'next_step' }],
           },
         },
+        next_step: {
+          always: [
+            {
+              target: 'choose_direction',
+              cond: (context) =>
+                context.points.length <= context.maxPointsLength &&
+                context.currentPoint.neighbourPoints.length > 0,
+            },
+            { target: 'done' },
+          ],
+        },
         choose_direction: {
-          entry: assign({
-            currentPoint: (context) => getNeighbourPoint(context.currentPoint),
+          entry: assign((context) => {
+            if (context.currentPoint.neighbourPoints.length === 0) {
+              send('DONE');
+            }
+            const neighbourPoint = getNeighbourPoint(context.currentPoint);
+            return {
+              points: [...context.points, [neighbourPoint]],
+              currentPoint: neighbourPoint,
+            };
           }),
           after: {
             500: { target: 'move_to_other_point' },
+          },
+          on: {
+            DONE: { target: 'done' },
+          },
+        },
+        done: {
+          after: {
+            10000: {
+              target: 'setup_random_route',
+            },
           },
         },
       },

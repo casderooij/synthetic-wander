@@ -12,21 +12,21 @@
 </script>
 
 <g transform={`translate(${street.p1.position.x} ${street.p1.position.y})`}>
-  {#if $state.context.isDebug}
+  <!-- {#if $state.context.isDebug}
     <circle r="0.5" fill={isSelected ? 'red' : 'black'} />
-  {/if}
+  {/if} -->
 
   <circle
     class="selector"
-    r="4"
+    r="3"
     fill="transparent"
     stroke-width="0.5"
     on:click={selectStartPoint}
   />
 
-  {#if isSelected}
+  <!-- {#if isSelected}
     <circle class="current-point" r="4" />
-  {/if}
+  {/if} -->
 </g>
 
 {#if isSelected}

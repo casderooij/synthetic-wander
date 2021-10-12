@@ -1,11 +1,15 @@
 <script lang="ts">
   import StreetComponent from '$lib/components/StreetComponent.svelte';
   import Line from '$lib/components/Line.svelte';
+  import CurrentPoint from '$lib/components/CurrentPoint.svelte';
+  import Circle from '$lib/components/Circle.svelte';
 
   import { state } from '$lib/route';
 
   const width = 297;
   const height = 420;
+
+  $: console.log($state);
 </script>
 
 <div>
@@ -16,7 +20,19 @@
       {/each}
     </g>
 
-    <Line />
+    {#each $state.context.points as points (points)}
+      {#if points.length > 1}
+        <Circle point={points[0]} />
+      {/if}
+    {/each}
+
+    <CurrentPoint />
+
+    {#each $state.context.points as points (points)}
+      {#if points.length > 1}
+        <Line {points} />
+      {/if}
+    {/each}
   </svg>
   <img src="/woensel-west-crossings.svg" alt="" />
 </div>

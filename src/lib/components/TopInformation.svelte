@@ -2,6 +2,13 @@
   import { state, send, Point } from '$lib/route';
   import { debounce } from 'lodash-es';
   import Range from '$lib/components/Range.svelte';
+  import { tweened } from 'svelte/motion';
+
+  let routeLength = tweened(Math.round($state.context.routeLength * 3.5), {
+    duration: 500,
+  });
+
+  $: routeLength.set(Math.round($state.context.routeLength * 3.5));
 
   let radius = 2;
 
@@ -25,6 +32,7 @@
   }
 
   $: neighbouringStreets = (() => {
+    if ($state.context.currentPoint.neighbourPoints.length === 0) return;
     const seen = {};
     seen[$state.context.currentPoint.parent.name] = true;
 
@@ -39,7 +47,7 @@
 <header>
   <div>
     <p>Starting point: {$state.context.startingPoint.parent.name}</p>
-    {#if neighbouringStreets.length > 0}
+    {#if $state.context.currentPoint.neighbourPoints.length > 0}
       <p>
         Neighbouring streets:
         {#each neighbouringStreets as street}
@@ -47,7 +55,7 @@
         {/each}
       </p>
     {/if}
-    <p>Route length: {Math.round($state.context.routeLength * 3.5)} m</p>
+    <p>Route length: {$routeLength.toFixed(0)} m</p>
   </div>
 
   <div>

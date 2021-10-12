@@ -1,18 +1,18 @@
 <script lang="ts">
-  import { state } from '$lib/route';
+  import { draw, fade } from 'svelte/transition';
+  import { cubicInOut } from 'svelte/easing';
+  import type { Point } from '$lib/route';
 
-  $: path = `M ${$state.context.points.map(
-    (point) => `${point.position.x},${point.position.y}`
-  )}`;
+  export let points: Point[];
 </script>
 
 <path
-  d={path}
+  in:draw={{ duration: 400, easing: cubicInOut }}
+  out:fade={{ duration: 1000 }}
+  d={`M ${points[0].position.x},${points[0].position.y}L${points[1].position.x},${points[1].position.y}`}
   stroke="#A5A8FF"
   fill="transparent"
   stroke-width="6"
-  stroke-linecap="round"
-  stroke-linejoin="round"
 />
 
 <style>
