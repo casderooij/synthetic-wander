@@ -41,13 +41,14 @@
       <div class="current_street__icon" />
       <p>{$state.context.currentPoint.parent.name}</p>
     </div>
-    {#if $state.context.currentPoint.neighbourPoints.length > 0}
-      <p>
+    <div class="section_left__neighbouring_streets">
+      <div class="neighbouring_streets__icon" />
+      {#if $state.context.currentPoint.neighbourPoints.length > 0}
         {#each neighbouringStreets as street}
           <p>{street.parent.name}</p>
         {/each}
-      </p>
-    {/if}
+      {/if}
+    </div>
   </section>
 
   <section class="section_right">
@@ -73,16 +74,16 @@
     position: relative;
     display: flex;
     flex-direction: column;
-    gap: 3rem;
+    gap: 3.4rem;
     flex: 1;
   }
   .section_left::before {
     content: '';
     position: absolute;
     z-index: -1;
-    width: 30%;
+    width: 36%;
     height: 1rem;
-    top: 2.8rem;
+    top: 3.8rem;
     left: 2%;
     border: 2px solid black;
     background: #fff;
@@ -117,6 +118,21 @@
     width: 1.8rem;
     height: 1.8rem;
     border-radius: 50%;
+    margin-right: 0.5rem;
+  }
+
+  .section_left__neighbouring_streets {
+    display: flex;
+    align-items: center;
+    height: 2.4rem;
+  }
+
+  .neighbouring_streets__icon {
+    background: url('/crossing-icon.svg');
+    background-position: center;
+    background-size: contain;
+    width: 1.8rem;
+    height: 1.8rem;
     margin-right: 0.5rem;
   }
 </style>
