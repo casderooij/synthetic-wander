@@ -120,24 +120,46 @@ const getNeighbourPoint = (currentPoint: Point) => {
   ];
 };
 
+function getUniqueCharacters(characters: string) {
+  let unique: string[] = [];
+
+  for (let i = 0; i < characters.length; i++) {
+    if (unique.includes(characters[i]) === false) {
+      unique.push(characters[i]);
+    }
+  }
+  return unique;
+}
+
+const nextLetterIndex = (letterIndex: number, characterArray: string[]) => {
+  const nextIndex = (letterIndex += 1);
+  if (nextIndex > characterArray.length - 1) {
+    console.log('DONE!');
+  }
+  return nextIndex;
+};
+
 type RouteEvent =
   | { type: 'DONE' }
   | { type: 'START_PERSONAL_ROUTE' }
+  | { type: 'STOP_PERSONAL_ROUTE' }
+  | { type: 'START_ROUTE' }
   | { type: 'NEW_ROUTE' }
   | { type: 'SET_RADIUS'; radius: number }
   | { type: 'SET_STARTING_POINT'; point: Point }
-  | { type: 'SET_USER_DATA'; data: IUserData }
-  | { type: 'START_ROUTE' };
+  | { type: 'SET_USER_DATA'; data: IUserData };
 
 interface RouteContext {
   isDebug: boolean;
   streets: Street[];
   currentPoint: Point;
-  userData?: IUserData;
+  userData: IUserData;
   points: Point[][];
   maxPointsLength: number;
   routeLength: number;
   routeEnd: boolean;
+  characterArray: string[];
+  letterIndex: number;
 }
 
 /**
@@ -150,10 +172,13 @@ const routeMachine = createMachine<RouteContext, RouteEvent>({
     isDebug: true,
     streets,
     currentPoint: startingPoint,
+    userData: { name: '' },
     maxPointsLength: 0,
     points: [],
     routeLength: 0,
     routeEnd: false,
+    characterArray: [],
+    letterIndex: 0,
   },
   states: {
     idle: {
@@ -244,13 +269,106 @@ const routeMachine = createMachine<RouteContext, RouteEvent>({
       },
     },
     personal_route: {
+      id: 'personal_route',
       initial: 'setup_personal_route',
       states: {
-        setup_personal_route: {},
-        move_to_other_point: {},
-        next_step: {},
-        choose_direction: {},
+        setup_personal_route: {
+          entry: assign((_) => {
+            return {
+              points: [[startingPoint]],
+              currentPoint:
+                Math.round(Math.random()) === 0
+                  ? startingPoint
+                  : startingPoint.neighbourPoints[
+                      randomRange(0, startingPoint.neighbourPoints.length - 1)
+                    ],
+              routeLength: 0,
+              userData: { name: '' },
+              characterArray: [],
+              letterIndex: 0,
+            };
+          }),
+          on: {
+            SET_USER_DATA: {
+              actions: assign({
+                userData: (_, event) => event.data,
+              }),
+              target: 'run.setup',
+              cond: (_, event) => event.data.name.length > 5,
+            },
+            SET_STARTING_POINT: {
+              actions: assign({
+                currentPoint: (_, event) => event.point,
+                points: (_, event) => [[event.point]],
+              }),
+            },
+          },
+        },
+        run: {
+          states: {
+            setup: {
+              entry: assign((context) => {
+                const characterArray = getUniqueCharacters(
+                  context.userData.name
+                );
+                const letterIndex = randomRange(0, characterArray.length - 1);
+
+                return {
+                  characterArray,
+                  letterIndex: nextLetterIndex(letterIndex, characterArray),
+                };
+              }),
+              after: {
+                1000: { target: 'move_to_other_point' },
+              },
+            },
+            move_to_other_point: {
+              entry: assign((context) => {
+                const otherPoint = getOtherPoint(context.currentPoint);
+
+                const newPointsArray = context.points;
+                newPointsArray[newPointsArray.length - 1][1] = otherPoint;
+
+                return {
+                  currentPoint: otherPoint,
+                  points: newPointsArray,
+                  routeLength:
+                    context.routeLength +
+                    squaredDistance(
+                      [
+                        context.currentPoint.position.x,
+                        context.currentPoint.position.y,
+                      ],
+                      [otherPoint.position.x, otherPoint.position.y]
+                    ),
+                };
+              }),
+              after: {
+                500: [{ target: 'next_step' }],
+              },
+            },
+            next_step: {
+              always: [
+                {
+                  target: 'choose_direction',
+                  cond: (context) =>
+                    !context.routeEnd &&
+                    context.currentPoint.neighbourPoints.length > 0,
+                },
+                { target: '#personal_route.done' },
+              ],
+            },
+            choose_direction: {
+              entry: assign(() => {
+                return {};
+              }),
+            },
+          },
+        },
         done: {},
+      },
+      on: {
+        STOP_PERSONAL_ROUTE: { target: 'idle' },
       },
       // initial: 'personal_route.setup',
       // entry: assign((context) => {

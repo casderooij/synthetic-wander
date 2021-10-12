@@ -6,10 +6,12 @@
   import Header from '$lib/components/Header.svelte';
   import Footer from '$lib/components/Footer.svelte';
   import Map from '$lib/components/Map.svelte';
-  import UserInput from '$lib/components/UserInput.svelte';
 
   import Plotter from '$lib/utils/axidraw/plot-coords';
   import getCircle from '$lib/utils/axidraw/get-circle';
+
+  import { state } from '$lib/route';
+  $: console.log($state.value);
 
   function checkPrintArea() {
     const PAPER_SIZE = {
