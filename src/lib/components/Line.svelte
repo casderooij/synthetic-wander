@@ -6,4 +6,17 @@
   )}`;
 </script>
 
-<path d={path} stroke="red" fill="transparent" />
+<path
+  d={path}
+  stroke="#A5A8FF"
+  fill="transparent"
+  stroke-width="6"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+/>
+
+<style>
+  path {
+    mix-blend-mode: multiply;
+  }
+</style>

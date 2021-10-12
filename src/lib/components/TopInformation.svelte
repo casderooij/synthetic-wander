@@ -47,6 +47,7 @@
         {/each}
       </p>
     {/if}
+    <p>Route length: {Math.round($state.context.routeLength * 3.5)} m</p>
   </div>
 
   <div>

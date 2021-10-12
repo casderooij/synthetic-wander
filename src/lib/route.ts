@@ -135,6 +135,8 @@ interface RouteContext {
   userData?: IUserData;
   points: Point[];
   maxPointsLength: number;
+  routeLength: number;
+  routeEnd: boolean;
 }
 
 /**
@@ -150,6 +152,8 @@ const routeMachine = createMachine<RouteContext, RouteEvent>({
     currentPoint: startingPoint,
     maxPointsLength: 0,
     points: [],
+    routeLength: 0,
+    routeEnd: false,
   },
   states: {
     idle: {
@@ -173,6 +177,19 @@ const routeMachine = createMachine<RouteContext, RouteEvent>({
               ...context.points,
               getOtherPoint(context.currentPoint),
             ],
+            routeLength: (context) => {
+              const otherPoint = getOtherPoint(context.currentPoint);
+              return (
+                context.routeLength +
+                squaredDistance(
+                  [
+                    context.currentPoint.position.x,
+                    context.currentPoint.position.y,
+                  ],
+                  [otherPoint.position.x, otherPoint.position.y]
+                )
+              );
+            },
           }),
           after: {
             100: {

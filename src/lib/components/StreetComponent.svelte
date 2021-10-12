@@ -43,7 +43,7 @@
   .current-point {
     transform: scale(2);
     animation: pulse 3s infinite;
-    fill: lightgreen;
+    fill: #ff5a5a;
   }
 
   .selector:hover {
