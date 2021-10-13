@@ -6,8 +6,8 @@
 
   import { state } from '$lib/route';
 
-  const width = 297;
-  const height = 420;
+  const width = 420;
+  const height = 297;
 </script>
 
 <div>
@@ -32,7 +32,7 @@
       {/if}
     {/each}
   </svg>
-  <img src="/woensel-west-crossings.svg" alt="" />
+  <img src="/woensel-west-crossings-horizontal.svg" alt="" />
 </div>
 
 <style>

@@ -33,7 +33,7 @@
     gap: 4rem;
     padding: 1rem;
     bottom: 0;
-    font-size: 2rem;
+    font-size: 1.4rem;
     width: 100%;
     pointer-events: none;
   }
@@ -56,10 +56,10 @@
     content: '';
     position: absolute;
     z-index: -1;
-    width: 20%;
+    width: 240px;
     height: 1rem;
-    top: 2.8rem;
-    left: 2%;
+    top: 2.3rem;
+    left: 40px;
     border: 2px solid;
     background: #fff;
     transform: rotate(2deg);
@@ -68,10 +68,10 @@
     content: '';
     position: absolute;
     z-index: -1;
-    width: 30%;
+    width: 140px;
     height: 1rem;
-    top: 3.2rem;
-    left: 8%;
+    top: 3rem;
+    left: 20px;
     border: 2px solid;
     background: #fff;
     transform: rotate(-4deg);

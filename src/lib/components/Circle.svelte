@@ -12,7 +12,7 @@
     out:scale={{ duration: 800 }}
     r={randomRange(2, 8)}
     style="--fill-color: hsl(0, 100%, {randomRange(
-      70,
+      76,
       95
     )}%); --animation-duration: {randomRange(3, 6)}s"
   />
@@ -21,11 +21,11 @@
 <style>
   circle {
     transform: scale(2);
-    /* animation: pulse var(--animation-duration) infinite; */
+    animation: pulse var(--animation-duration) infinite;
     fill: var(--fill-color);
   }
 
-  /* @keyframes pulse {
+  @keyframes pulse {
     0% {
       transform: scale(0.5);
     }
@@ -37,5 +37,5 @@
     100% {
       transform: scale(0.5);
     }
-  } */
+  }
 </style>

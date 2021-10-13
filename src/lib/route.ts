@@ -1,6 +1,6 @@
 import { createMachine, assign } from 'xstate';
 import { useMachine } from '@xstate/svelte';
-import streetData from '$lib/streetData';
+import streetData from '$lib/streetData-2';
 import type { IPoint, IStreet, IUserData } from '$lib/interfaces';
 import { squaredDistance, randomRange } from '$lib/utils/math';
 import getCircle from '$lib/utils/axidraw/get-circle';

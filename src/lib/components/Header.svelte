@@ -119,16 +119,16 @@
     display: flex;
     flex-direction: column;
     gap: 4rem;
-    flex: 1;
+    flex: 2;
   }
   .section_left::before {
     content: '';
     position: absolute;
     z-index: -1;
-    width: 36%;
+    width: 200px;
     height: 1rem;
-    top: 3.8rem;
-    left: 2%;
+    top: 3.2rem;
+    left: 20px;
     border: 2px solid;
     background: #fff;
     transform: rotate(3deg);
@@ -137,10 +137,10 @@
     content: '';
     position: absolute;
     z-index: -1;
-    width: 50%;
+    width: 140px;
     height: 1rem;
-    top: 2.8rem;
-    left: 20%;
+    top: 3.8rem;
+    left: 140px;
     border: 2px solid;
     background: #fff;
     transform: rotate(-3deg);
