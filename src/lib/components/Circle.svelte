@@ -21,11 +21,11 @@
 <style>
   circle {
     transform: scale(2);
-    animation: pulse var(--animation-duration) infinite;
+    /* animation: pulse var(--animation-duration) infinite; */
     fill: var(--fill-color);
   }
 
-  @keyframes pulse {
+  /* @keyframes pulse {
     0% {
       transform: scale(0.5);
     }
@@ -37,5 +37,5 @@
     100% {
       transform: scale(0.5);
     }
-  }
+  } */
 </style>
