@@ -19,7 +19,9 @@
     {/each}
   </section>
   <section class="info">
-    <p>Route distance: {$routeLength.toFixed(0)} m</p>
+    <p class="info__route-distance">
+      Route distance: {$routeLength.toFixed(0)} m
+    </p>
   </section>
 </footer>
 
@@ -33,6 +35,7 @@
     bottom: 0;
     font-size: 2rem;
     width: 100%;
+    pointer-events: none;
   }
 
   .street_list {
@@ -43,10 +46,13 @@
   .info {
     position: relative;
     display: flex;
-    flex-direction: column;
+    width: 100%;
+    justify-content: space-between;
+    flex-direction: row;
     margin-bottom: 2.4rem;
   }
-  .info::before {
+
+  .info__route-distance::before {
     content: '';
     position: absolute;
     z-index: -1;
@@ -58,7 +64,7 @@
     background: #fff;
     transform: rotate(2deg);
   }
-  .info::after {
+  .info__route-distance::after {
     content: '';
     position: absolute;
     z-index: -1;

@@ -3,6 +3,7 @@ import { useMachine } from '@xstate/svelte';
 import streetData from '$lib/streetData';
 import type { IPoint, IStreet, IUserData } from '$lib/interfaces';
 import { squaredDistance, randomRange } from '$lib/utils/math';
+import getCircle from '$lib/utils/axidraw/get-circle';
 
 class Point {
   parent: Street;
@@ -80,9 +81,9 @@ const streets = initializeData();
 /**
  * Get the startingPoint located at Tante Netty
  */
-const startingPoint = streets.find(
-  (street) => street.id === '873a216f-dbc7-4b70-85f4-da05063b1cf0'
-).p1;
+const getStartingPoint = () =>
+  streets.find((street) => street.id === '873a216f-dbc7-4b70-85f4-da05063b1cf0')
+    .p1;
 
 /**
  * Random point from streets array
@@ -146,6 +147,7 @@ type RouteEvent =
   | { type: 'START_ROUTE' }
   | { type: 'NEW_ROUTE' }
   | { type: 'SET_RADIUS'; radius: number }
+  | { type: 'TOGGLE_JIGGLE_MODE' }
   | { type: 'SET_STARTING_POINT'; point: Point }
   | { type: 'SET_USER_DATA'; data: IUserData };
 
@@ -160,6 +162,7 @@ interface RouteContext {
   routeEnd: boolean;
   characterArray: string[];
   letterIndex: number;
+  circlePoints: number[][];
 }
 
 /**
@@ -171,7 +174,7 @@ const routeMachine = createMachine<RouteContext, RouteEvent>({
   context: {
     isDebug: true,
     streets,
-    currentPoint: startingPoint,
+    currentPoint: getStartingPoint(),
     userData: { name: '' },
     maxPointsLength: 0,
     points: [],
@@ -179,6 +182,7 @@ const routeMachine = createMachine<RouteContext, RouteEvent>({
     routeEnd: false,
     characterArray: [],
     letterIndex: 0,
+    circlePoints: [],
   },
   states: {
     idle: {
@@ -191,6 +195,7 @@ const routeMachine = createMachine<RouteContext, RouteEvent>({
               currentPoint: getRandomStartingPoint(),
               maxPointsLength: randomRange(14, 26),
               routeLength: 0,
+              streets: initializeData(),
             };
           }),
           after: {
@@ -274,14 +279,10 @@ const routeMachine = createMachine<RouteContext, RouteEvent>({
       states: {
         setup_personal_route: {
           entry: assign((_) => {
+            const startingPoint = getStartingPoint();
             return {
               points: [[startingPoint]],
-              currentPoint:
-                Math.round(Math.random()) === 0
-                  ? startingPoint
-                  : startingPoint.neighbourPoints[
-                      randomRange(0, startingPoint.neighbourPoints.length - 1)
-                    ],
+              currentPoint: startingPoint,
               routeLength: 0,
               userData: { name: '' },
               characterArray: [],
@@ -316,6 +317,7 @@ const routeMachine = createMachine<RouteContext, RouteEvent>({
                 return {
                   characterArray,
                   letterIndex: nextLetterIndex(letterIndex, characterArray),
+                  circlePoints: getCircle(40, characterArray.length, 50, 50),
                 };
               }),
               after: {
@@ -359,7 +361,7 @@ const routeMachine = createMachine<RouteContext, RouteEvent>({
               ],
             },
             choose_direction: {
-              entry: assign(() => {
+              entry: assign((context) => {
                 return {};
               }),
             },

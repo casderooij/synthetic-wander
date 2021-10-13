@@ -2,6 +2,7 @@
   import { draw, fade } from 'svelte/transition';
   import { cubicInOut } from 'svelte/easing';
   import type { Point } from '$lib/route';
+  import { randomRange } from '$lib/utils/math';
 
   export let points: Point[];
 </script>

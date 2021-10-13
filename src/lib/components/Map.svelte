@@ -8,8 +8,6 @@
 
   const width = 297;
   const height = 420;
-
-  // $: console.log($state);
 </script>
 
 <div>

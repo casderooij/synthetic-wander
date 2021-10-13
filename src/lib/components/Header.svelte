@@ -42,11 +42,13 @@
     </div>
     <div class="section_left__neighbouring_streets">
       <div class="neighbouring_streets__icon" />
-      {#if $state.context.currentPoint.neighbourPoints.length > 0}
-        {#each neighbouringStreets as street}
-          <p>{street.parent.name}</p>
-        {/each}
-      {/if}
+      <div class="neighbouring_streets__list">
+        {#if $state.context.currentPoint.neighbourPoints.length > 0}
+          {#each neighbouringStreets as street}
+            <p>{street.parent.name}</p>
+          {/each}
+        {/if}
+      </div>
     </div>
   </section>
 
@@ -109,13 +111,14 @@
     gap: 1rem;
 
     z-index: 2;
+    pointer-events: none;
   }
 
   .section_left {
     position: relative;
     display: flex;
     flex-direction: column;
-    gap: 3.4rem;
+    gap: 4rem;
     flex: 1;
   }
   .section_left::before {
@@ -147,6 +150,7 @@
     display: flex;
     flex-direction: column;
     align-items: flex-end;
+    pointer-events: all;
   }
 
   .section_left__current_street {
@@ -164,7 +168,7 @@
 
   .section_left__neighbouring_streets {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     height: 2.4rem;
   }
 
@@ -175,6 +179,12 @@
     width: 1.8rem;
     height: 1.8rem;
     margin-right: 0.5rem;
+  }
+  .neighbouring_streets__list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    font-size: 1.4rem;
   }
 
   .user_input_stop_button {
@@ -208,7 +218,7 @@
 
   .letter_circle_container {
     position: relative;
-    margin-top: 2rem;
+    margin-top: 5rem;
     padding: 0.4rem;
     border: 2px solid;
     border-radius: 50%;
@@ -218,7 +228,7 @@
     content: '';
     position: absolute;
     z-index: -1;
-    width: 80%;
+    width: 100%;
     height: 1rem;
     top: 0.8rem;
     left: -10%;
