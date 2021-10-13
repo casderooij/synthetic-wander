@@ -164,12 +164,15 @@ type RouteEvent =
   | { type: 'SET_RADIUS'; radius: number }
   | { type: 'TOGGLE_JIGGLE_MODE' }
   | { type: 'SET_STARTING_POINT'; point: Point }
-  | { type: 'SET_USER_DATA'; data: IUserData };
+  | { type: 'SET_USER_DATA'; data: IUserData }
+  | { type: 'FINISH' }
+  | { type: 'USE_PRINTER'; data: boolean };
 
 interface RouteContext {
   isDebug: boolean;
   streets: Street[];
   currentPoint: Point;
+  previousPoint: Point;
   userData: IUserData;
   points: Point[][];
   maxPointsLength: number;
@@ -178,20 +181,23 @@ interface RouteContext {
   characterArray: string[];
   circlePoints: number[][];
   letterIndex: number;
+  routeIndex: number;
   currentLetter: string;
-  letters: string[];
+  letters: string;
+  usePrinter: boolean;
 }
 
 /**
  * Route machine
  */
 const routeMachine = createMachine<RouteContext, RouteEvent>({
-  key: 'route',
+  id: 'route',
   initial: 'idle',
   context: {
     isDebug: true,
     streets,
     currentPoint: getStartingPoint(),
+    previousPoint: undefined,
     userData: { name: '' },
     maxPointsLength: 0,
     points: [],
@@ -200,8 +206,10 @@ const routeMachine = createMachine<RouteContext, RouteEvent>({
     characterArray: [],
     circlePoints: [],
     letterIndex: 0,
+    routeIndex: 0,
     currentLetter: '',
-    letters: [],
+    letters: '',
+    usePrinter: false,
   },
   states: {
     idle: {
@@ -308,6 +316,8 @@ const routeMachine = createMachine<RouteContext, RouteEvent>({
               userData: { name: '' },
               characterArray: [],
               letterIndex: 0,
+              routeIndex: 0,
+              usePrinter: false,
             };
           }),
           on: {
@@ -316,12 +326,16 @@ const routeMachine = createMachine<RouteContext, RouteEvent>({
                 userData: (_, event) => event.data,
               }),
               target: 'run.setup',
-              cond: (_, event) => event.data.name.length > 5,
             },
             SET_STARTING_POINT: {
               actions: assign({
                 currentPoint: (_, event) => event.point,
                 points: (_, event) => [[event.point]],
+              }),
+            },
+            USE_PRINTER: {
+              actions: assign({
+                usePrinter: (_, event) => event.data,
               }),
             },
           },
@@ -340,14 +354,14 @@ const routeMachine = createMachine<RouteContext, RouteEvent>({
                   50
                 );
 
-                const letters = context.userData.name
+                const name = context.userData.name
                   .split(' ')
                   .join('')
                   .toLowerCase();
-                const filteredLetters = letters.replace(/[^a-zA-Z]/g, '');
+                const letters = name.replace(/[^a-zA-Z]/g, '');
 
                 // Get first letter using the letterIndex
-                const currentLetter = filteredLetters[context.letterIndex];
+                const currentLetter = letters[context.routeIndex];
                 // Get the index corresponding with the currentLetter
                 const letterIndex = characterArray.indexOf(currentLetter);
 
@@ -356,7 +370,8 @@ const routeMachine = createMachine<RouteContext, RouteEvent>({
                   letterIndex,
                   currentLetter,
                   circlePoints: letterCircle,
-                  letters: filteredLetters.split(''),
+                  letters: letters,
+                  routeIndex: 0,
                 };
               }),
               after: {
@@ -370,16 +385,23 @@ const routeMachine = createMachine<RouteContext, RouteEvent>({
                 const newPointsArray = context.points;
                 newPointsArray[newPointsArray.length - 1][1] = otherPoint;
 
-                let nextLetterIndex = context.letterIndex;
+                let nextRouteIndex = context.routeIndex;
                 if (context.currentPoint.neighbourPoints.length > 1) {
-                  nextLetterIndex--;
+                  nextRouteIndex++;
                 }
-                if (nextLetterIndex < 0) {
-                  nextLetterIndex = context.circlePoints.length - 1;
-                }
+                // if (nextRouteIndex > context.letters.length) {
+                //   nextRouteIndex = 0;
+                // }
+
+                const currentLetter = context.letters[nextRouteIndex];
+                const nextLetterIndex =
+                  context.characterArray.indexOf(currentLetter);
 
                 return {
+                  routeIndex: nextRouteIndex,
                   letterIndex: nextLetterIndex,
+                  currentLetter,
+                  previousPoint: context.currentPoint,
                   currentPoint: otherPoint,
                   points: newPointsArray,
                   routeLength:
@@ -396,6 +418,16 @@ const routeMachine = createMachine<RouteContext, RouteEvent>({
               after: {
                 500: [{ target: 'next_step' }],
               },
+            },
+            before_move_to_other_point: {
+              always: [
+                {
+                  target: '#personal_route.done',
+                  cond: (context) =>
+                    context.routeIndex === context.letters.length - 1,
+                },
+                { target: 'move_to_other_point' },
+              ],
             },
             next_step: {
               always: [
@@ -458,26 +490,50 @@ const routeMachine = createMachine<RouteContext, RouteEvent>({
                   differenceBetweenAngles: Math.abs(ownAngle - currentAngle),
                 });
 
-                neighbourAngles.sort(
+                const sortedNeighbouringAngles = [...neighbourAngles].sort(
                   (a, b) =>
                     a.differenceBetweenAngles - b.differenceBetweenAngles
                 );
 
+                if (
+                  context.previousPoint &&
+                  context.previousPoint.parent.id ===
+                    sortedNeighbouringAngles[0].point.parent.id
+                ) {
+                  return {
+                    points: [
+                      ...context.points,
+                      [sortedNeighbouringAngles[1].point],
+                    ],
+                    currentPoint: sortedNeighbouringAngles[1].point,
+                  };
+                }
+
                 return {
-                  points: [...context.points, [neighbourAngles[0].point]],
-                  currentPoint: neighbourAngles[0].point,
+                  points: [
+                    ...context.points,
+                    [sortedNeighbouringAngles[0].point],
+                  ],
+                  currentPoint: sortedNeighbouringAngles[0].point,
                 };
               }),
-              // after: {
-              //   500: { target: 'move_to_other_point' },
-              // },
+              after: {
+                1000: { target: 'before_move_to_other_point' },
+              },
               on: {
                 DONE: { target: '#personal_route.done' },
               },
             },
           },
         },
-        done: {},
+        done: {
+          on: {
+            FINISH: { target: '#route.idle' },
+          },
+          after: {
+            10000: { target: '#route.idle' },
+          },
+        },
       },
       on: {
         STOP_PERSONAL_ROUTE: { target: 'idle' },

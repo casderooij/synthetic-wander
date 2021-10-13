@@ -1,5 +1,4 @@
 <script lang="ts">
-  import type { IUserData } from '$lib/interfaces';
   import { state, send, Point } from '$lib/route';
   import LetterCircle from '$lib/components/LetterCircle.svelte';
   import { matches } from 'lodash';
@@ -32,6 +31,8 @@
         : (seen[point.parent.name] = true);
     });
   })();
+
+  let usePrinter = false;
 </script>
 
 <header>
@@ -59,7 +60,7 @@
       >
     {/if}
 
-    {#if $state.matches('personal_route')}
+    {#if $state.matches('personal_route') && !$state.matches('personal_route.done')}
       <p
         on:click={() => send('STOP_PERSONAL_ROUTE')}
         class="user_input_stop_button"
@@ -69,10 +70,20 @@
     {/if}
 
     {#if $state.matches('personal_route.setup_personal_route')}
+      <div class="section_right__use_printer_checkbox">
+        <label>
+          <input
+            type="checkbox"
+            bind:checked={usePrinter}
+            on:change={() => send('USE_PRINTER', { data: usePrinter })}
+          />
+          <p>Use printer</p>
+        </label>
+      </div>
       <form on:submit|preventDefault={submitUserData} class="user_input_form">
         <div class="user_input_container">
           <label class="user_input_name_label" for="username"
-            >Enter your name (minimal 5 characters)</label
+            >Enter your name</label
           >
           <input
             class="user_input_name_input"
@@ -93,6 +104,10 @@
       <div class="letter_circle_container">
         <LetterCircle />
       </div>
+    {/if}
+
+    {#if $state.matches('personal_route.done')}
+      <button on:click={() => send('FINISH')}>Finish route</button>
     {/if}
   </section>
 </header>
@@ -153,6 +168,14 @@
     pointer-events: all;
   }
 
+  .section_right__use_printer_checkbox label {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 1rem;
+    margin-top: 2rem;
+  }
+
   .section_left__current_street {
     display: flex;
     align-items: center;
@@ -194,7 +217,7 @@
   }
 
   .user_input_form {
-    margin-top: 3rem;
+    margin-top: 1rem;
     width: 100%;
     display: flex;
     flex-direction: column;
