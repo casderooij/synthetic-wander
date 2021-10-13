@@ -18,6 +18,6 @@
     mix-blend-mode: multiply;
     stroke: #a5a8ff;
     fill: transparent;
-    stroke-width: 6;
+    stroke-width: 4;
   }
 </style>

@@ -5,9 +5,15 @@
 <svg viewBox="0 0 100 100">
   {#each $state.context.circlePoints as point, index}
     {#if index < $state.context.characterArray.length}
-      <text x={point[0] - 3} y={point[1] + 2.5}
-        >{$state.context.characterArray[index]}</text
-      >
+      {#if index === $state.context.letterIndex}
+        <text x={point[0] - 2} y={point[1] + 2} fill="#ff5a5a"
+          >{$state.context.characterArray[index]}</text
+        >
+      {:else}
+        <text x={point[0] - 2} y={point[1] + 2} fill="#2a2a2a"
+          >{$state.context.characterArray[index]}</text
+        >
+      {/if}
     {/if}
   {/each}
 
@@ -23,15 +29,20 @@
   svg {
     width: 200px;
     display: block;
+    transform-origin: center;
+    transform: scale(1.2);
   }
 
   text {
-    font-size: 10px;
+    font-size: 7px;
   }
 
   path {
     transform-origin: center;
-    transform: scale(0.8);
-    stroke: black;
+    transform: scale(0.9);
+    stroke: #2a2a2a;
+  }
+  circle {
+    fill: #2a2a2a;
   }
 </style>

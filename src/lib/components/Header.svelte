@@ -119,7 +119,7 @@
     display: flex;
     flex-direction: column;
     gap: 4rem;
-    flex: 2;
+    flex: 3;
   }
   .section_left::before {
     content: '';
@@ -219,7 +219,7 @@
   .letter_circle_container {
     position: relative;
     margin-top: 5rem;
-    padding: 0.4rem;
+    padding: 0.6rem;
     border: 2px solid;
     border-radius: 50%;
     background: white;

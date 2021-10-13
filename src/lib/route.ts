@@ -9,6 +9,7 @@ class Point {
   parent: Street;
   position: IPoint;
   neighbourPoints: Point[];
+  otherPoint: Point;
 
   constructor(parent: Street, position: IPoint) {
     this.parent = parent;
@@ -43,6 +44,8 @@ class Street {
     this.name = data.name;
     this.p1 = new Point(this, data.p1);
     this.p2 = new Point(this, data.p2);
+    this.p1.otherPoint = this.p2;
+    this.p2.otherPoint = this.p1;
   }
 }
 
@@ -121,17 +124,19 @@ const getNeighbourPoint = (currentPoint: Point) => {
   ];
 };
 
-function getUniqueCharacters(characters: string) {
+const getUniqueCharacters = (characters: string) => {
   let unique: string[] = [];
 
   for (let i = 0; i < characters.length; i++) {
-    if (unique.includes(characters[i]) === false) {
-      unique.push(characters[i]);
+    if (unique.includes(characters[i]) === false && characters[i] !== ' ') {
+      unique.push(characters[i].toLowerCase());
     }
   }
-  return unique;
-}
 
+  return unique;
+};
+
+// ??
 const nextLetterIndex = (letterIndex: number, characterArray: string[]) => {
   const nextIndex = (letterIndex += 1);
   if (nextIndex > characterArray.length - 1) {
@@ -140,8 +145,18 @@ const nextLetterIndex = (letterIndex: number, characterArray: string[]) => {
   return nextIndex;
 };
 
+const getAngle = (centerX: number, centerY: number, x: number, y: number) => {
+  const dy = y - centerY;
+  const dx = x - centerX;
+  let theta = Math.atan2(dy, dx); // range (-PI, PI]
+  // theta *= 180 / Math.PI; // rads to degs, range (-180, 180]
+  if (theta < 0) theta = Math.PI * 2 + theta;
+  return theta;
+};
+
 type RouteEvent =
   | { type: 'DONE' }
+  | { type: 'NEXT_STEP' }
   | { type: 'START_PERSONAL_ROUTE' }
   | { type: 'STOP_PERSONAL_ROUTE' }
   | { type: 'START_ROUTE' }
@@ -161,8 +176,10 @@ interface RouteContext {
   routeLength: number;
   routeEnd: boolean;
   characterArray: string[];
-  letterIndex: number;
   circlePoints: number[][];
+  letterIndex: number;
+  currentLetter: string;
+  letters: string[];
 }
 
 /**
@@ -181,8 +198,10 @@ const routeMachine = createMachine<RouteContext, RouteEvent>({
     routeLength: 0,
     routeEnd: false,
     characterArray: [],
-    letterIndex: 0,
     circlePoints: [],
+    letterIndex: 0,
+    currentLetter: '',
+    letters: [],
   },
   states: {
     idle: {
@@ -248,7 +267,9 @@ const routeMachine = createMachine<RouteContext, RouteEvent>({
             if (context.currentPoint.neighbourPoints.length === 0) {
               send('DONE');
             }
+
             const neighbourPoint = getNeighbourPoint(context.currentPoint);
+
             return {
               points: [...context.points, [neighbourPoint]],
               currentPoint: neighbourPoint,
@@ -309,19 +330,37 @@ const routeMachine = createMachine<RouteContext, RouteEvent>({
           states: {
             setup: {
               entry: assign((context) => {
-                const characterArray = getUniqueCharacters(
-                  context.userData.name
+                const characters = 'abcdefghijklmnopqrstuvwxyz';
+                const characterArray = characters.split('');
+
+                const letterCircle = getCircle(
+                  40,
+                  characterArray.length,
+                  50,
+                  50
                 );
-                const letterIndex = randomRange(0, characterArray.length - 1);
+
+                const letters = context.userData.name
+                  .split(' ')
+                  .join('')
+                  .toLowerCase();
+                const filteredLetters = letters.replace(/[^a-zA-Z]/g, '');
+
+                // Get first letter using the letterIndex
+                const currentLetter = filteredLetters[context.letterIndex];
+                // Get the index corresponding with the currentLetter
+                const letterIndex = characterArray.indexOf(currentLetter);
 
                 return {
                   characterArray,
-                  letterIndex: nextLetterIndex(letterIndex, characterArray),
-                  circlePoints: getCircle(40, characterArray.length, 50, 50),
+                  letterIndex,
+                  currentLetter,
+                  circlePoints: letterCircle,
+                  letters: filteredLetters.split(''),
                 };
               }),
               after: {
-                1000: { target: 'move_to_other_point' },
+                1000: { target: 'choose_direction' },
               },
             },
             move_to_other_point: {
@@ -331,7 +370,16 @@ const routeMachine = createMachine<RouteContext, RouteEvent>({
                 const newPointsArray = context.points;
                 newPointsArray[newPointsArray.length - 1][1] = otherPoint;
 
+                let nextLetterIndex = context.letterIndex;
+                if (context.currentPoint.neighbourPoints.length > 1) {
+                  nextLetterIndex--;
+                }
+                if (nextLetterIndex < 0) {
+                  nextLetterIndex = context.circlePoints.length - 1;
+                }
+
                 return {
+                  letterIndex: nextLetterIndex,
                   currentPoint: otherPoint,
                   points: newPointsArray,
                   routeLength:
@@ -362,8 +410,70 @@ const routeMachine = createMachine<RouteContext, RouteEvent>({
             },
             choose_direction: {
               entry: assign((context) => {
-                return {};
+                if (context.currentPoint.neighbourPoints.length === 0) {
+                  send('DONE');
+                }
+
+                if (context.currentPoint.neighbourPoints.length === 1) {
+                  return {
+                    points: [
+                      ...context.points,
+                      [context.currentPoint.neighbourPoints[0]],
+                    ],
+                    currentPoint: context.currentPoint.neighbourPoints[0],
+                  };
+                }
+
+                const currentAngle = getAngle(
+                  50,
+                  50,
+                  context.circlePoints[context.letterIndex][0],
+                  context.circlePoints[context.letterIndex][1]
+                );
+
+                const ownAngle = getAngle(
+                  context.currentPoint.position.x,
+                  context.currentPoint.position.y,
+                  context.currentPoint.otherPoint.position.x,
+                  context.currentPoint.otherPoint.position.y
+                );
+
+                const neighbourAngles =
+                  context.currentPoint.neighbourPoints.map((point) => {
+                    const angle = getAngle(
+                      point.position.x,
+                      point.position.y,
+                      point.otherPoint.position.x,
+                      point.otherPoint.position.y
+                    );
+                    return {
+                      point,
+                      angle,
+                      differenceBetweenAngles: Math.abs(angle - currentAngle),
+                    };
+                  });
+                neighbourAngles.push({
+                  point: context.currentPoint,
+                  angle: ownAngle,
+                  differenceBetweenAngles: Math.abs(ownAngle - currentAngle),
+                });
+
+                neighbourAngles.sort(
+                  (a, b) =>
+                    a.differenceBetweenAngles - b.differenceBetweenAngles
+                );
+
+                return {
+                  points: [...context.points, [neighbourAngles[0].point]],
+                  currentPoint: neighbourAngles[0].point,
+                };
               }),
+              // after: {
+              //   500: { target: 'move_to_other_point' },
+              // },
+              on: {
+                DONE: { target: '#personal_route.done' },
+              },
             },
           },
         },
