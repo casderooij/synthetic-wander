@@ -166,13 +166,13 @@
     pointer-events: all;
   }
 
-  .section_right__use_printer_checkbox label {
+  /* .section_right__use_printer_checkbox label {
     display: flex;
     align-items: center;
     gap: 0.4rem;
     font-size: 1rem;
     margin-top: 2rem;
-  }
+  } */
 
   .section_left__current_street {
     display: flex;

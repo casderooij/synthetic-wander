@@ -32,7 +32,7 @@
     mix-blend-mode: multiply;
   }
 
-  path {
+  /* path {
     stroke: #cfcfcf;
     stroke-width: 1;
     mix-blend-mode: multiply;
@@ -41,7 +41,7 @@
   .wijzer {
     stroke: red;
     mix-blend-mode: none;
-  }
+  } */
 
   @keyframes pulse {
     0% {

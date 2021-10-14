@@ -620,19 +620,8 @@ const routeMachine = createMachine<RouteContext, RouteEvent>({
                   await plotter.penUp();
 
                   for (let i = 0; i < pointArray.length; i++) {
-                    if (i % 2 === 1) {
-                      let radius;
-                      if (
-                        pointArray[i].position.x < 370 &&
-                        pointArray[i].position.x > 50 &&
-                        pointArray[i].position.x < 160 &&
-                        pointArray[i].position.x > 50
-                      ) {
-                        radius = randomRange(8, 24);
-                      } else {
-                        radius = randomRange(8, 12);
-                        console.log(radius);
-                      }
+                    if (i % 3 === 1) {
+                      let radius = randomRange(8, 12);
                       const circlePoints = getCircle(radius, 40, 50, 50);
 
                       for (let j = 0; j < circlePoints.length; j++) {
