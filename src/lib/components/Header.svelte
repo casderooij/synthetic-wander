@@ -32,7 +32,7 @@
     });
   })();
 
-  let usePrinter = false;
+  $: usePrinter = $state.context.usePrinter;
 </script>
 
 <header>
@@ -242,7 +242,7 @@
   .letter_circle_container {
     position: relative;
     margin-top: 5rem;
-    padding: 0.6rem;
+    padding: 1.6rem;
     border: 2px solid;
     border-radius: 50%;
     background: white;

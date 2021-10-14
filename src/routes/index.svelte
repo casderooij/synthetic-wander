@@ -13,36 +13,56 @@
   import { state } from '$lib/route';
   $: console.log($state.value);
 
-  function checkPrintArea() {
-    const PAPER_SIZE = {
-      width: 160,
-      height: 101,
-    };
+  const PAPER_SIZE = {
+    width: 148,
+    height: 105,
+  };
 
-    const plotter = new Plotter();
+  // const plotter = new Plotter();
 
-    const paperBounds = [
-      [0, 0],
-      [PAPER_SIZE.width, 0],
-      [PAPER_SIZE.width, PAPER_SIZE.height],
-      [0, PAPER_SIZE.height],
-      [0, 0],
-    ];
+  // const marginWidth = 0;
+  // const paperBounds = [
+  //   [marginWidth, 0],
+  //   [PAPER_SIZE.width - marginWidth, 0],
+  //   [PAPER_SIZE.width - marginWidth, PAPER_SIZE.height],
+  //   [marginWidth, PAPER_SIZE.height],
+  //   [marginWidth, 0],
+  // ];
 
-    // plotter.coords = [paperBounds];
+  // plotter.coords = [paperBounds];
 
-    const points = getCircle(
-      20,
-      30,
-      PAPER_SIZE.width / 2,
-      PAPER_SIZE.height / 2
-    );
-    plotter.coords = [points];
-    plotter.print();
-  }
+  // function checkPrintArea() {
+  //   const points = getCircle(
+  //     10,
+  //     30,
+  //     PAPER_SIZE.width / 2,
+  //     PAPER_SIZE.height / 2
+  //   );
+  //   plotter.coords = [points];
+  //   plotter.print();
+  // }
+
+  // async function park() {
+  //   const plotter = new Plotter();
+  //   await plotter.park();
+  // }
+
+  // async function move(x, y) {
+  //   const plotter = new Plotter();
+  //   await plotter.moveTo(x, y);
+  // }
+
+  // async function reset() {
+  //   const plotter = new Plotter();
+  //   await plotter.reset();
+  // }
 </script>
 
-<!-- <button on:click={checkPrintArea}>Check print area</button> -->
+<!-- <button on:click={checkPrintArea}>Check print area</button>
+<button on:click={park}>park</button>
+<button on:click={() => move(50, 50)}>move to center</button>
+<button on:click={() => move(100, 100)}>move to bottom right</button>
+<button on:click={reset}>reset</button> -->
 
 <div class="container">
   <Header />

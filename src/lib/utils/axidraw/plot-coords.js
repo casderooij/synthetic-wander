@@ -10,8 +10,8 @@ const BOT_SCALE = {
 
 export default class Plotter {
   constructor(coords = []) {
-    this.svgContainer = document.createElement('svg');
-    this.progressBar = new ProgressBar(document.body);
+    // this.svgContainer = document.createElement('svg');
+    // this.progressBar = new ProgressBar(document.body);
     this.coords = coords;
 
     this.shouldAbortPrinting = false;
@@ -24,7 +24,7 @@ export default class Plotter {
 
     this.svgPaths = renderSVGPaths(coords, { renderAs: 'nodes' });
     this.svgPaths.forEach((path) => {
-      this.svgContainer.appendChild(path);
+      // this.svgContainer.appendChild(path);
     });
   }
 
@@ -32,22 +32,60 @@ export default class Plotter {
     this._coords = coords;
     this.svgPaths = renderSVGPaths(coords, { renderAs: 'nodes' });
     this.svgPaths.forEach((path, index) => {
-      const oldPath = this.svgContainer.querySelector(
-        `path:nth-child(${index + 1})`
-      );
-
-      if (!oldPath) {
-        this.svgContainer.appendChild(path);
-        return;
-      }
-
-      oldPath.setAttribute('d', path.getAttribute('d'));
+      // const oldPath = this.svgContainer.querySelector(
+      //   `path:nth-child(${index + 1})`
+      // );
+      // if (!oldPath) {
+      //   this.svgContainer.appendChild(path);
+      //   return;
+      // }
+      // oldPath.setAttribute('d', path.getAttribute('d'));
     });
   }
 
   abort() {
     const response = window.confirm('This will abort the printing!');
     this.shouldAbortPrinting = response;
+  }
+
+  async moveTo(x, y) {
+    if (!this.axidraw) {
+      this.axidraw = await createAxidraw();
+    }
+
+    await this.axidraw.moveTo(x, y);
+  }
+
+  async park() {
+    if (!this.axidraw) {
+      this.axidraw = await createAxidraw();
+    }
+
+    await this.axidraw.parkPen();
+  }
+
+  async reset() {
+    if (!this.axidraw) {
+      this.axidraw = await createAxidraw();
+    }
+
+    await this.axidraw.resetMotor();
+  }
+
+  async penDown() {
+    if (!this.axidraw) {
+      this.axidraw = await createAxidraw();
+    }
+
+    await this.axidraw.penDown();
+  }
+
+  async penUp() {
+    if (!this.axidraw) {
+      this.axidraw = await createAxidraw();
+    }
+
+    await this.axidraw.penUp();
   }
 
   async print() {
@@ -76,9 +114,9 @@ export default class Plotter {
 
       await this.axidraw.drawPath(relativeLine);
       path.removeAttribute('class');
-      this.progressBar.progress = i / (this._coords.length - 1);
+      // this.progressBar.progress = i / (this._coords.length - 1);
     }
 
-    await this.axidraw.parkPen();
+    // await this.axidraw.parkPen();
   }
 }

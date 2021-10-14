@@ -4,6 +4,7 @@ import streetData from '$lib/streetData-2';
 import type { IPoint, IStreet, IUserData } from '$lib/interfaces';
 import { squaredDistance, randomRange } from '$lib/utils/math';
 import getCircle from '$lib/utils/axidraw/get-circle';
+import Plotter from '$lib/utils/axidraw/plot-coords';
 
 class Point {
   parent: Street;
@@ -154,6 +155,33 @@ const getAngle = (centerX: number, centerY: number, x: number, y: number) => {
   return theta;
 };
 
+function constrain(n, low, high) {
+  return Math.max(Math.min(n, high), low);
+}
+
+function map(n, start1, stop1, start2, stop2) {
+  const newval = ((n - start1) / (stop1 - start1)) * (stop2 - start2) + start2;
+
+  if (start2 < stop2) {
+    return constrain(newval, start2, stop2);
+  } else {
+    return constrain(newval, stop2, start2);
+  }
+}
+
+const sleep = (ms: number) => {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+};
+
+const plotter = new Plotter();
+
+const width = 420;
+const height = 297;
+// const xRatio = map(0, 100, );
+// const yRatio = 80 / 297;
+// const widthMargin = 2;
+// const heightMargin = 0.1;
+
 type RouteEvent =
   | { type: 'DONE' }
   | { type: 'NEXT_STEP' }
@@ -166,6 +194,8 @@ type RouteEvent =
   | { type: 'SET_STARTING_POINT'; point: Point }
   | { type: 'SET_USER_DATA'; data: IUserData }
   | { type: 'FINISH' }
+  | { type: 'CHOOSE_DIRECTION' }
+  | { type: 'MOVE_TO_OTHER_POINT' }
   | { type: 'USE_PRINTER'; data: boolean };
 
 interface RouteContext {
@@ -209,7 +239,7 @@ const routeMachine = createMachine<RouteContext, RouteEvent>({
     routeIndex: 0,
     currentLetter: '',
     letters: '',
-    usePrinter: false,
+    usePrinter: true,
   },
   states: {
     idle: {
@@ -317,7 +347,7 @@ const routeMachine = createMachine<RouteContext, RouteEvent>({
               characterArray: [],
               letterIndex: 0,
               routeIndex: 0,
-              usePrinter: false,
+              usePrinter: true,
             };
           }),
           on: {
@@ -440,6 +470,39 @@ const routeMachine = createMachine<RouteContext, RouteEvent>({
                 { target: '#personal_route.done' },
               ],
             },
+            // Move printer
+            move_printer_to_point_to_other: {
+              invoke: {
+                id: 'movePrinterToPointToOther',
+                src:
+                  ({ currentPoint }) =>
+                  async (callback) => {
+                    // await plotter.moveTo(
+                    //   currentPoint.position.x * xRatio,
+                    //   currentPoint.position.y * yRatio
+                    // );
+                    callback('CHOOSE_DIRECTION');
+                  },
+              },
+              on: { MOVE_TO_OTHER_POINT: 'move_to_other_point' },
+            },
+
+            move_printer_to_point_to_direction: {
+              invoke: {
+                id: 'movePrinterToPointToDirection',
+                src:
+                  ({ currentPoint }) =>
+                  async (callback) => {
+                    // await plotter.moveTo(
+                    //   currentPoint.position.x * xRatio,
+                    //   currentPoint.position.y * yRatio
+                    // );
+                    callback('CHOOSE_DIRECTION');
+                  },
+              },
+              on: { CHOOSE_DIRECTION: 'choose_direction' },
+            },
+
             choose_direction: {
               entry: assign((context) => {
                 if (context.currentPoint.neighbourPoints.length === 0) {
@@ -521,108 +584,105 @@ const routeMachine = createMachine<RouteContext, RouteEvent>({
                 1000: { target: 'before_move_to_other_point' },
               },
               on: {
-                DONE: { target: '#personal_route.done' },
+                DONE: {
+                  target: '#personal_route.done',
+                  actions: [
+                    async () => {
+                      await plotter.park();
+                    },
+                  ],
+                },
               },
             },
           },
         },
         done: {
-          on: {
-            FINISH: { target: '#route.idle' },
+          invoke: {
+            src:
+              ({ points, usePrinter }) =>
+              async (callback) => {
+                if (usePrinter) {
+                  const pointArray = points.flat();
+
+                  for (let i = 0; i < pointArray.length; i++) {
+                    await sleep(100);
+                    await plotter.moveTo(
+                      map(pointArray[i].position.x, 0, 420, 0, 92.5),
+                      map(pointArray[i].position.y, 0, 297, -3.96, 100)
+                    );
+
+                    if (i === 0) {
+                      await plotter.penDown();
+                    }
+                  }
+
+                  await sleep(100);
+                  await plotter.penUp();
+
+                  for (let i = 0; i < pointArray.length; i++) {
+                    if (i % 2 === 1) {
+                      let radius;
+                      if (
+                        pointArray[i].position.x < 370 &&
+                        pointArray[i].position.x > 50 &&
+                        pointArray[i].position.x < 160 &&
+                        pointArray[i].position.x > 50
+                      ) {
+                        radius = randomRange(8, 20);
+                      } else {
+                        radius = randomRange(8, 12);
+                        console.log(radius);
+                      }
+                      const circlePoints = getCircle(radius, 40, 50, 50);
+
+                      for (let j = 0; j < circlePoints.length; j++) {
+                        await plotter.moveTo(
+                          map(circlePoints[j][0], 0, 420, 0, 92.5) +
+                            map(pointArray[i].position.x, 0, 420, 0, 92.5) -
+                            map(50, 0, 420, 0, 92.5),
+                          map(circlePoints[j][1], 0, 297, -3.96, 100) +
+                            map(pointArray[i].position.y, 0, 297, -3.96, 100) -
+                            map(50 + radius, 0, 420, 0, 92.5)
+                        );
+
+                        if (j === 0) {
+                          await sleep(200);
+                          await plotter.penDown();
+                        }
+                      }
+                    }
+
+                    await plotter.penUp();
+                  }
+                } else {
+                  await sleep(2000);
+                }
+                callback('FINISH');
+              },
           },
-          after: {
-            10000: { target: '#route.idle' },
+          on: {
+            FINISH: {
+              target: '#route.idle',
+              actions: [
+                async () => {
+                  await plotter.park();
+                },
+              ],
+            },
           },
         },
       },
       on: {
-        STOP_PERSONAL_ROUTE: { target: 'idle' },
+        STOP_PERSONAL_ROUTE: {
+          target: 'idle',
+          actions: [
+            async () => {
+              await plotter.park();
+              await plotter.reset();
+            },
+          ],
+        },
       },
-      // initial: 'personal_route.setup',
-      // entry: assign((context) => {
-      //   return {
-      //     currentPoint: startingPoint,
-      //     points: [],
-      //   };
-      // }),
-      // states: {
-      //   setup: {
-      //     on: {
-      //       SET_STARTING_POINT: {
-      //         actions: assign({
-      //           currentPoint: (_, event) => event.point,
-      //         }),
-      //       },
-      //       SET_USER_DATA: {
-      //         actions: assign({
-      //           userData: (_, event) => event.data,
-      //         }),
-      //       },
-      //       START_ROUTE: {
-      //         target: 'personal_route.run',
-      //       },
-      //     },
-      //   },
-      //   run: {
-      //     initial: 'personal_route.run.setup',
-      //     states: {
-      //       setup: {
-      //         entry: assign({
-      //           points: (context) => [[context.currentPoint]],
-      //         }),
-      //         after: {
-      //           500: { target: 'personal_route.run.move_to_other_point' },
-      //         },
-      //       },
-      //       move_to_other_point: {
-      //         entry: assign((context) => {
-      //           const otherPoint = getOtherPoint(context.currentPoint);
-
-      //           const newPointsArray = context.points;
-      //           newPointsArray[newPointsArray.length - 1][1] = otherPoint;
-
-      //           return {
-      //             currentPoint: otherPoint,
-      //             points: newPointsArray,
-      //             routeLength:
-      //               context.routeLength +
-      //               squaredDistance(
-      //                 [
-      //                   context.currentPoint.position.x,
-      //                   context.currentPoint.position.y,
-      //                 ],
-      //                 [otherPoint.position.x, otherPoint.position.y]
-      //               ),
-      //           };
-      //         }),
-      //         // after: {
-      //         //   500: [{ target: 'next_step' }],
-      //         // },
-      //       },
-      //     },
-      //   },
-      // },
-      // on: {
-      //   SET_USER_DATA: {
-      //     actions: assign({
-      //       userData: (_, event) => event.data,
-      //     }),
-      //   },
-      //   SET_STARTING_POINT: {
-      //     actions: assign({
-      //       currentPoint: (_, event) => event.point,
-      //       startingPoint: (_, event) => event.point,
-      //     }),
-      //   },
-      //   SET_RADIUS: {
-      //     actions: assign({
-      //       streets: (_, event) => initializeData(event.radius),
-      //     }),
-      //   },
-      //   START_ROUTE: {
-      //     target: 'run',
-      //   },
-      // },
     },
   },
 });
