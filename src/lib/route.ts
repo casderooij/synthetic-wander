@@ -628,7 +628,7 @@ const routeMachine = createMachine<RouteContext, RouteEvent>({
                         pointArray[i].position.x < 160 &&
                         pointArray[i].position.x > 50
                       ) {
-                        radius = randomRange(8, 20);
+                        radius = randomRange(8, 24);
                       } else {
                         radius = randomRange(8, 12);
                         console.log(radius);

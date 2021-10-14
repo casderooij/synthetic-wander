@@ -55,9 +55,7 @@
 
   <section class="section_right">
     {#if $state.matches('idle')}
-      <button on:click={() => send('START_PERSONAL_ROUTE')}
-        >Start new route</button
-      >
+      <button on:click={() => send('START_PERSONAL_ROUTE')}>Print route</button>
     {/if}
 
     {#if $state.matches('personal_route') && !$state.matches('personal_route.done')}
@@ -70,7 +68,7 @@
     {/if}
 
     {#if $state.matches('personal_route.setup_personal_route')}
-      <div class="section_right__use_printer_checkbox">
+      <!-- <div class="section_right__use_printer_checkbox">
         <label>
           <input
             type="checkbox"
@@ -79,7 +77,7 @@
           />
           <p>Use printer</p>
         </label>
-      </div>
+      </div> -->
       <form on:submit|preventDefault={submitUserData} class="user_input_form">
         <div class="user_input_container">
           <label class="user_input_name_label" for="username"
